@@ -1,0 +1,12 @@
+image_width: 1920
+image_height: 1080
+camera_name: cam0
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1383.5140380859375, 0.0, 935.0743408203125, 0.0, 1386.122802734375, 555.1389770507812, 0.0, 0.0, 1.0]
+distortion_model: radtan
+distortion_coefficients:
+  rows: 1
+  cols: 5
+data: [0.08294512331485748, -0.1505880355834961, -0.0002781424263957888, -0.000254483224125579, 0.0]

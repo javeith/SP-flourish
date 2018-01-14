@@ -1,0 +1,13 @@
+image_width: 409.0
+image_height: 216.0
+camera_name: cam0
+camera_matrix:
+  rows: 3.0
+  cols: 3.0
+  data: [446.541870493182, 0.0, 205.683101377386, 0.0, 446.210809216768, 105.386363675949,
+    0.0, 0.0, 1.0]
+distortion_model: radtan
+distortion_coefficients:
+  rows: 1.0
+  cols: 4.0
+  data: [-0.360513970334134, -0.0525282646773371, 0.0, 0.0]

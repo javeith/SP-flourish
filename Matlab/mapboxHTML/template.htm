@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        
+        <title>Flourish - Spatio-Temporal-Spectral Mapping</title>
+        <script src="https://api.mapbox.com/mapbox.js/v3.1.0/mapbox.js"></script>
+        <link href="https://api.mapbox.com/mapbox.js/v3.1.0/mapbox.css" rel="stylesheet" />
+        
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        
+        <!-- jQuery library -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        
+        <!-- Latest compiled JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+        <style>
+            #map {
+            position: absolute; left: 0px; top: 90px; bottom: 0px; right: 0px; 
+            }
+            body {background-color: white;} 
+        </style>
+        
+    </head>
+    
+    <body>
+        <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.css" rel="stylesheet" />
+        <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.js"></script>
+        <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-geodesy/v0.1.0/leaflet-geodesy.js"></script>
+        
+        <style>
+            .map-overlay {
+            font: 14px/8px "Helvetica Neue", Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: 17%;
+            top: 90px;
+            left: 35px;
+            padding: 10px;
+            }
+            .map-overlay .map-overlay-inner {
+            background-color: #fff;
+            box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+            opacity: 0.7;
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+            }
+            .map-overlay h2 {
+            line-height: 24px;
+            display: block;
+            margin: 0 0 10px;
+            }
+            .map-overlay input {
+            background-color: transparent;
+            display: inline-block;
+            width: 100%;
+            position: relative;
+            margin: 0;
+            cursor: ew-resize;
+            }
+            .map-bar {
+            font: 14px/8px "Helvetica Neue", Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: 330px;
+            bottom: 0px;
+            left: 50%;
+            padding: 10px;
+            margin-left: -150px;
+            }	
+            .map-bar .map-bar-inner {
+            background-color: #fff;
+            box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+            opacity: 0.7;
+            border-radius: 3px;
+            padding: 3px;
+            margin-bottom: 10px;
+            }
+            .map-legend {
+            font: 14px/8px "Helvetica Neue", Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: 150px;
+            top: 230px;
+            left: 185px;
+            padding: 10px;
+            margin-left: -150px;
+            }	
+            .map-legend .map-legend-inner {
+            background-color: #fff;
+            box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+            opacity: 0.7;
+            border-radius: 3px;
+            padding: 3px;
+            margin-bottom: 10px;
+            }		
+            .menu-ui {
+            background:#fff;
+            position:absolute;
+            opacity: 0.7;
+            top:190px;right:10px;
+            z-index:1;
+            border-radius:3px;
+            width:120px;
+            border:1px solid rgba(0,0,0,0.4);
+            }
+            .menu-ui a {
+            font-size:13px;
+            color:#ff0000;
+            display:block;
+            margin:0;padding:0;
+            padding:3px;
+            text-decoration:none;
+            border-bottom:1px solid rgba(0,0,0,0.25);
+            text-align:center;
+            }
+            .menu-ui a:first-child {
+            border-radius:3px 3px 0 0;
+            }
+            .menu-ui a:last-child {
+            border:none;
+            border-radius:0 0 3px 3px;
+            }
+            .menu-ui a:hover {
+            background:#f8f8f8;
+            color:#404040;
+            }
+            .menu-ui a.active {
+            background:#4cbe38;
+            color:#FFF;
+            }
+            .menu-ui a.active:hover {
+            background:#a0ff60;
+            }
+            pre.ui-coordinates {
+            position:absolute;
+            bottom:0px;
+            left:10px;
+            padding:5px 10px;
+            background:rgba(0,0,0,0.5);
+            color:#fff;
+            font-size:11px;
+            line-height:18px;
+            border-radius:3px;
+            }
+        </style>
+        
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2">
+                    <img src="index.png" style="width:200px;" > 
+                </div>
+                <div class="col-md-10">
+                    <h3 style="display: inline-block; vertical-align: middle; line-height: 45px;"><strong> Spatio-Temporal-Spectral Mapping</strong></h3>          
+                </div>
+            </div>
+            
+            <nav id="menu-ui" class="menu-ui"></nav>
+            <div id="map"></div>
+            <pre id="coordinates" class="ui-coordinates"></pre>
+            
+            <div class="map-overlay top">
+                <div class="map-overlay-inner">
+                    <h4>Timeline</h4>
+                    <label id="date"></label>
+                    
+                    <!-- SLIDER PARAMETERS -->
+	   	        		
+	        		
+                </div>
+                <div class="map-overlay-inner">
+                    <div id="legend" class="legend">
+                        <div class="bar"></div>
+                        <div>Date: <label id="dateToShow">Placeholder</label></div>
+                    </div>
+                </div>
+            </div>
+            <div class="map-bar top">
+                <div class="map-bar-inner">
+                    <img src="bar.png" style="width:300px;" >
+            </div></div>
+            <div class="map-legend top">
+                <div class="map-legend-inner">
+                    <img src="classes.png" style="width:130px;" >
+            </div></div>
+            
+            <script>
+                L.mapbox.accessToken = "pk.eyJ1IjoibW9oYW5hZHQiLCJhIjoiY2oyaG1penBhMDBsZjMzbWU2aGlvbWluZyJ9.JgNdHCfEoon5xfns4MD1AQ";
+                
+                <!-- FILL WITH IMAGES & BOUNDING BOXES -->
+         	
+         	
+				                
+				var map = L.mapbox.map("map")
+				    .setView([47.3, 8.5], 10)
+				    .fitBounds(imageBounds1);    
+				L.control.layers({
+				    "Mapbox Satellite": L.mapbox.tileLayer("mapbox.satellite").addTo(map),
+				    "Mapbox Streets": L.mapbox.tileLayer("mapbox.streets")
+				}).addTo(map);
+				var imageGroup = L.layerGroup().addTo(map);
+				var layers = document.getElementById("menu-ui");
+				// Create image switchers
+				var linkRGB = document.createElement("a");
+				    linkRGB.href = "#";
+				    linkRGB.className = "active";
+				    linkRGB.innerHTML = "RGB";
+				var linkNIR = document.createElement("a");
+				    linkNIR.href = "#";
+				    linkNIR.className = "active";
+				    linkNIR.innerHTML = "NIR";    
+				var linkGrey = document.createElement("a");
+				    linkGrey.href = "#";
+				    linkGrey.className = "active";
+				    linkGrey.innerHTML = "Greyscale"; 
+				var linkGRE = document.createElement("a");
+				    linkGRE.href = "#";
+				    linkGRE.className = "active";
+				    linkGRE.innerHTML = "Green";  
+				var linkREG = document.createElement("a");
+				    linkREG.href = "#";
+				    linkREG.className = "active";
+				    linkREG.innerHTML = "REG";         
+				var linkNDVI = document.createElement("a");
+				    linkNDVI.href = "#";
+				    linkNDVI.className = "active";
+				    linkNDVI.innerHTML = "NDVI";  
+				var linkRED = document.createElement("a");
+				    linkRED.href = "#";
+				    linkRED.className = "active";
+				    linkRED.innerHTML = "RED";  				 
+				var linkSGR = document.createElement("a");
+				    linkSGR.href = "#"; 
+				    linkSGR.className = "active";
+				    linkSGR.innerHTML = "SGR";    
+				var linkEGI = document.createElement("a");
+				    linkEGI.href = "#"; 
+				    linkEGI.className = "active"; 
+				    linkEGI.innerHTML = "EGI";
+				var linkband1 = document.createElement("a");
+				    linkband1.href = "#"; 
+				    linkband1.className = "active"; 
+				    linkband1.innerHTML = "700nm";
+				var linkband2 = document.createElement("a");
+				    linkband2.href = "#"; 
+				    linkband2.className = "active"; 
+				    linkband2.innerHTML = "714nm"; 
+				var linkband3 = document.createElement("a");
+				    linkband3.href = "#"; 
+				    linkband3.className = "active"; 
+				    linkband3.innerHTML = "739nm";
+				var linkband4 = document.createElement("a");
+				    linkband4.href = "#"; 
+				    linkband4.className = "active"; 
+				    linkband4.innerHTML = "752nm";
+				var linkband5 = document.createElement("a");
+				    linkband5.href = "#"; 
+				    linkband5.className = "active"; 
+				    linkband5.innerHTML = "765nm";
+				var linkband6 = document.createElement("a");
+				    linkband6.href = "#"; 
+				    linkband6.className = "active"; 
+				    linkband6.innerHTML = "778nm";
+				var linkband7 = document.createElement("a");
+				    linkband7.href = "#"; 
+				    linkband7.className = "active"; 
+				    linkband7.innerHTML = "791nm";
+				var linkband8 = document.createElement("a");
+				    linkband8.href = "#"; 
+				    linkband8.className = "active"; 
+				    linkband8.innerHTML = "803nm";
+				var linkband9 = document.createElement("a");
+				    linkband9.href = "#"; 
+				    linkband9.className = "active"; 
+				    linkband9.innerHTML = "816nm";
+				var linkband10 = document.createElement("a");
+				    linkband10.href = "#"; 
+				    linkband10.className = "active"; 
+				    linkband10.innerHTML = "828nm";
+				var linkband11 = document.createElement("a");
+				    linkband11.href = "#"; 
+				    linkband11.className = "active"; 
+				    linkband11.innerHTML = "845nm";
+				var linkband12 = document.createElement("a");
+				    linkband12.href = "#"; 
+				    linkband12.className = "active"; 
+				    linkband12.innerHTML = "857nm"; 
+				var linkband13 = document.createElement("a");
+				    linkband13.href = "#"; 
+				    linkband13.className = "active"; 
+				    linkband13.innerHTML = "867nm";
+				var linkband14 = document.createElement("a");
+				    linkband14.href = "#"; 
+				    linkband14.className = "active"; 
+				    linkband14.innerHTML = "864nm";
+				var linkband15 = document.createElement("a");
+				    linkband15.href = "#"; 
+				    linkband15.className = "active"; 
+				    linkband15.innerHTML = "791nm";
+				var linkband16 = document.createElement("a");
+				    linkband16.href = "#"; 
+				    linkband16.className = "active"; 
+				    linkband16.innerHTML = "608nm";
+				var linkband17 = document.createElement("a");
+				    linkband17.href = "#"; 
+				    linkband17.className = "active"; 
+				    linkband17.innerHTML = "615nm";
+				var linkband18 = document.createElement("a");
+				    linkband18.href = "#"; 
+				    linkband18.className = "active"; 
+				    linkband18.innerHTML = "623nm";
+				var linkband19 = document.createElement("a");
+				    linkband19.href = "#"; 
+				    linkband19.className = "active"; 
+				    linkband19.innerHTML = "636nm";
+				var linkband20 = document.createElement("a");
+				    linkband20.href = "#"; 
+				    linkband20.className = "active"; 
+				    linkband20.innerHTML = "645nm";
+				var linkband21 = document.createElement("a");
+				    linkband21.href = "#"; 
+				    linkband21.className = "active"; 
+				    linkband21.innerHTML = "653nm";
+				var linkband22 = document.createElement("a");
+				    linkband22.href = "#"; 
+				    linkband22.className = "active"; 
+				    linkband22.innerHTML = "662nm"; 
+				var linkband23 = document.createElement("a");
+				    linkband23.href = "#"; 
+				    linkband23.className = "active"; 
+				    linkband23.innerHTML = "670nm";
+				var linkband24 = document.createElement("a");
+				    linkband24.href = "#"; 
+				    linkband24.className = "active"; 
+				    linkband24.innerHTML = "678nm";
+				var linkband25 = document.createElement("a");
+				    linkband25.href = "#"; 
+				    linkband25.className = "active"; 
+				    linkband25.innerHTML = "686nm";
+				var linkband26 = document.createElement("a");
+				    linkband26.href = "#"; 
+				    linkband26.className = "active"; 
+				    linkband26.innerHTML = "465nm";				    
+				var linkband27 = document.createElement("a");
+				    linkband27.href = "#"; 
+				    linkband27.className = "active"; 
+				    linkband27.innerHTML = "474nm";
+				var linkband28 = document.createElement("a");
+				    linkband28.href = "#"; 
+				    linkband28.className = "active"; 
+				    linkband28.innerHTML = "485nm";
+				var linkband29 = document.createElement("a");
+				    linkband29.href = "#"; 
+				    linkband29.className = "active"; 
+				    linkband29.innerHTML = "496nm";
+				var linkband30 = document.createElement("a");
+				    linkband30.href = "#"; 
+				    linkband30.className = "active"; 
+				    linkband30.innerHTML = "510nm";
+				var linkband31 = document.createElement("a");
+				    linkband31.href = "#"; 
+				    linkband31.className = "active"; 
+				    linkband31.innerHTML = "522nm";				    				    				    				    
+				var linkband32 = document.createElement("a");
+				    linkband32.href = "#"; 
+				    linkband32.className = "active"; 
+				    linkband32.innerHTML = "534nm";
+				var linkband33 = document.createElement("a");
+				    linkband33.href = "#"; 
+				    linkband33.className = "active"; 
+				    linkband33.innerHTML = "546nm";
+				var linkband34 = document.createElement("a");
+				    linkband34.href = "#"; 
+				    linkband34.className = "active"; 
+				    linkband34.innerHTML = "548nm";
+				var linkband35 = document.createElement("a");
+				    linkband35.href = "#"; 
+				    linkband35.className = "active"; 
+				    linkband35.innerHTML = "562nm";
+				var linkband36 = document.createElement("a");
+				    linkband36.href = "#"; 
+				    linkband36.className = "active"; 
+				    linkband36.innerHTML = "578nm";				    
+				var linkband37 = document.createElement("a");
+				    linkband37.href = "#"; 
+				    linkband37.className = "active"; 
+				    linkband37.innerHTML = "586nm";
+				var linkband38 = document.createElement("a");
+				    linkband38.href = "#"; 
+				    linkband38.className = "active"; 
+				    linkband38.innerHTML = "600nm";
+				var linkband39 = document.createElement("a");
+				    linkband39.href = "#"; 
+				    linkband39.className = "active"; 
+				    linkband39.innerHTML = "608nm";
+				var linkband40 = document.createElement("a");
+				    linkband40.href = "#"; 
+				    linkband40.className = "active"; 
+				    linkband40.innerHTML = "624nm";
+				var linkband41 = document.createElement("a");
+				    linkband41.href = "#"; 
+				    linkband41.className = "active"; 
+				    linkband41.innerHTML = "630nm";						    						    				    
+				var linkPN = document.createElement("a");
+				    linkPN.href = "#"; 
+				    linkPN.className = "active"; 
+				    linkPN.innerHTML = "Pattern Recognition Network";
+				var linkLDA = document.createElement("a");
+				    linkLDA.href = "#"; 
+				    linkLDA.className = "active"; 
+				    linkLDA.innerHTML = "Linear Discriminant Analysis";   
+				var linkQDA = document.createElement("a");
+				    linkQDA.href = "#"; 
+				    linkQDA.className = "active"; 
+				    linkQDA.innerHTML = "Quadratic Discriminant Analysis";   
+				var linkTREE = document.createElement("a");
+				    linkTREE.href = "#"; 
+				    linkTREE.className = "active"; 
+				    linkTREE.innerHTML = "Random Forest";
+                var linkSOM3x3 = document.createElement("a");
+				    linkSOM3x3.href = "#"; 
+				    linkSOM3x3.className = "active"; 
+				    linkSOM3x3.innerHTML = "Self Organizing Map: 3x3 classes";
+                var linkSOM4x4 = document.createElement("a");
+				    linkSOM4x4.href = "#"; 
+				    linkSOM4x4.className = "active"; 
+				    linkSOM4x4.innerHTML = "Self Organizing Map: 4x4 classes";
+				var linkHIDE = document.createElement("a");
+				    linkHIDE.href = "#"; 
+				    linkHIDE.className = "active"; 
+				    linkHIDE.innerHTML = "Hide All";  
+                <!-- DEFAULT DATASET -->
+     			
+     			
+				
+				var date = [
+                <!-- ADD DATES OF DATASETS -->
+
+
+
+				];
+				
+				document.getElementById("dateToShow").innerText = date[0];				
+				
+				var coordinates = document.getElementById("coordinates");
+				
+				var marker = L.marker([47.45, 8.6817], {
+				    icon: L.mapbox.marker.icon({
+				      "marker-color": "#4cbe38"
+				    }),
+				    draggable: true
+				}).addTo(map);
+				
+				marker.on("dragend", ondragend);
+				
+				ondragend();
+				
+				var featureGroup = L.featureGroup().addTo(map);
+				
+				var drawControl = new L.Control.Draw({
+				  edit: {
+				    featureGroup: featureGroup
+				  },
+				  draw: {
+				    polygon: true,
+				    polyline: false,
+				    rectangle: false,
+				    circle: false,
+				    marker: false
+				  }
+				}).addTo(map);
+				
+				drawControl.setDrawingOptions({
+				    polygon: {
+				    	shapeOptions: {
+				        	color: "#4cbe38"
+				        }
+				    }
+				});
+				
+				map.on("draw:created", showPolygonArea);
+				map.on("draw:edited", showPolygonAreaEdited);
+				
+				// Functions
+				document.getElementById("slider").addEventListener("input", function(e) {
+					var dataSet = parseInt(e.target.value);
+					document.getElementById("dateToShow").innerText = date[dataSet];
+
+                <!-- SWITCH BETWEEN DATASETS -->
+					
+					 
+				});
+				
+				function addImage(imageUrl, imageBounds, link, group) {
+					var image = L.imageOverlay(imageUrl, imageBounds)
+						.addTo(group);
+				
+				    link.onclick = function(e) {
+				        e.preventDefault();
+				        e.stopPropagation();
+						  
+						if (this.className == "active") {
+				        		image.setOpacity(0);
+				        		this.className = "inactive";
+				        } else {
+				        		image.setOpacity(1);
+				        		this.className = "active";				
+				        }  
+				    };    
+				}
+				
+				function hideAll(link, group) {
+                	link.onclick = function(e) {
+				    	e.preventDefault();
+				        e.stopPropagation();
+						  
+                        group.eachLayer(function (layer) {
+                            layer.setOpacity(0);
+                         });
+                         
+                         for(var child=layers.firstChild; child!==null; child=child.nextSibling) {
+                            if(child.nextSibling!==null) {
+                                child.className = "inactive";
+                            }
+                         }
+				    };
+                }
+				
+				function ondragend() {
+				    var m = marker.getLatLng();
+                    coordinates.innerHTML = "Latitude: " + m.lat + "<br />Longitude: " + m.lng;
+                }
+                
+                function showPolygonAreaEdited(e) {
+                    e.layers.eachLayer(function(layer) {
+                        showPolygonArea({ layer: layer });
+                    });
+                }
+                
+                function showPolygonArea(e) {
+                    featureGroup.clearLayers();
+                    featureGroup.addLayer(e.layer);
+                    e.layer.bindPopup("Area: " + (LGeo.area(e.layer)).toFixed(2) + " m<sup>2</sup>");
+                    e.layer.openPopup();
+                }			
+            </script>
+            
+        </div>
+    </body>
+    
+</html>

@@ -1,0 +1,12 @@
+image_width: 1280
+image_height: 960
+camera_name: cam0
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1664.9, 0.0, 620.987, 0.0, 1664.9, 507.08, 0.0, 0.0, 1.0]
+distortion_model: fisheye
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0, 1, 0.0124371, -0.148997, 0]

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	
+	<title>Flourish - Spatio-Temporal-Spectral Mapping</title>
+	<script src="https://api.mapbox.com/mapbox.js/v3.1.0/mapbox.js"></script>
+	<link href="https://api.mapbox.com/mapbox.js/v3.1.0/mapbox.css" rel="stylesheet" />
+	
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+   <style>
+      #map {
+       position: absolute; left: 0px; top: 90px; bottom: 0px; right: 0px; 
+      }
+      body {background-color: white;} 
+   </style>
+ 
+</head>
+
+<body>
+	<link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.css" rel="stylesheet" />
+	<script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.js"></script>
+	<script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-geodesy/v0.1.0/leaflet-geodesy.js"></script>
+	
+	<style>
+		.map-overlay {
+		    font: 14px/8px "Helvetica Neue", Arial, Helvetica, sans-serif;
+		    position: absolute;
+		    width: 15%;
+		    top: 90px;
+		    left: 35px;
+		    padding: 10px;
+		}
+		.map-overlay .map-overlay-inner {
+		    background-color: #fff;
+		    box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+		    opacity: 0.7;
+		    border-radius: 3px;
+		    padding: 10px;
+		    margin-bottom: 10px;
+		}
+		.map-overlay h2 {
+		    line-height: 24px;
+		    display: block;
+		    margin: 0 0 10px;
+		}
+		.map-overlay input {
+		    background-color: transparent;
+		    display: inline-block;
+		    width: 100%;
+		    position: relative;
+		    margin: 0;
+		    cursor: ew-resize;
+		}
+		.map-bar {
+		    font: 14px/8px "Helvetica Neue", Arial, Helvetica, sans-serif;
+		    position: absolute;
+		    width: 330px;
+		    bottom: 0px;
+		    left: 50%;
+		    padding: 10px;
+		    margin-left: -150px;
+		}	
+	   .map-bar .map-bar-inner {
+		    background-color: #fff;
+		    box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
+		    opacity: 0.7;
+		    border-radius: 3px;
+		    padding: 3px;
+		    margin-bottom: 10px;
+		}		
+		.menu-ui {
+		  background:#fff;
+		  position:absolute;
+		  opacity: 0.7;
+		  top:190px;right:10px;
+		  z-index:1;
+		  border-radius:3px;
+		  width:120px;
+		  border:1px solid rgba(0,0,0,0.4);
+		}
+		.menu-ui a {
+		  font-size:13px;
+		  color:#ff0000;
+		  display:block;
+		  margin:0;padding:0;
+		  padding:3px;
+		  text-decoration:none;
+		  border-bottom:1px solid rgba(0,0,0,0.25);
+		  text-align:center;
+		}
+		.menu-ui a:first-child {
+		  border-radius:3px 3px 0 0;
+		}
+		.menu-ui a:last-child {
+		  border:none;
+		  border-radius:0 0 3px 3px;
+		}
+		.menu-ui a:hover {
+		  background:#f8f8f8;
+		  color:#404040;
+		}
+		.menu-ui a.active {
+		  background:#4cbe38;
+		  color:#FFF;
+		}
+		.menu-ui a.active:hover {
+		  background:#a0ff60;
+		}
+		pre.ui-coordinates {
+		  position:absolute;
+		  bottom:0px;
+		  left:10px;
+		  padding:5px 10px;
+		  background:rgba(0,0,0,0.5);
+		  color:#fff;
+		  font-size:11px;
+		  line-height:18px;
+		  border-radius:3px;
+		}
+	</style>
+	
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-2">
+				<img src="index.png" style="width:200px;" > 
+			</div>
+			<div class="col-md-10">
+				<h3 style="display: inline-block; vertical-align: middle; line-height: 45px;"><strong> Spatio-Temporal-Spectral Mapping</strong></h3>		
+
+			</div>
+		</div>
+		
+		<nav id="menu-ui" class="menu-ui"></nav>
+		<div id="map"></div>
+		<pre id="coordinates" class="ui-coordinates"></pre>
+	
+			<div class="map-overlay top">
+	    		<div class="map-overlay-inner">
+	        		<h4>Timeline</h4>
+	        		<label id="date"></label>
+	        		
+	   <!-- SLIDER PARAMETERS -->
+<input id="slider" type="range" min="0" max="2" step="1" value="0" />
+	        		
+	    		</div>
+	    	<div class="map-overlay-inner">
+	      	<div id="legend" class="legend">
+	         	<div class="bar"></div>
+	            <div>Date: <label id="dateToShow">Placeholder</label></div>
+	        	</div>
+	    	</div>
+			</div><div class="map-bar top">
+			<div class="map-bar-inner">
+	    		<img src="bar.png" style="width:300px;" >
+	    	</div></div>
+	
+			<script>
+				L.mapbox.accessToken = "pk.eyJ1IjoibW9oYW5hZHQiLCJhIjoiY2oyaG1penBhMDBsZjMzbWU2aGlvbWluZyJ9.JgNdHCfEoon5xfns4MD1AQ";
+				
+         	<!-- FILL WITH IMAGES & BOUNDING BOXES -->
+var imageUrl1_1= "/media/thanu/raghavshdd1/html/13.April 2017/NDVI.png",
+imageUrl1_2= "/media/thanu/raghavshdd1/html/13.April 2017/NIR.png",
+imageUrl1_3= "/media/thanu/raghavshdd1/html/13.April 2017/RED.png",
+imageUrl1_4= "/media/thanu/raghavshdd1/html/13.April 2017/RGB.png",
+imageBounds1= L.latLngBounds([
+[47.444286, 8.6845036],
+[47.443863, 8.6837778]]),
+imageUrl2_1= "/media/thanu/raghavshdd1/html/05.May 2017/GRE.png",
+imageUrl2_2= "/media/thanu/raghavshdd1/html/05.May 2017/NDVI.png",
+imageUrl2_3= "/media/thanu/raghavshdd1/html/05.May 2017/NIR.png",
+imageUrl2_4= "/media/thanu/raghavshdd1/html/05.May 2017/RED.png",
+imageUrl2_5= "/media/thanu/raghavshdd1/html/05.May 2017/REG.png",
+imageUrl2_6= "/media/thanu/raghavshdd1/html/05.May 2017/RGB.png",
+imageBounds2= L.latLngBounds([
+[47.444473, 8.6848106],
+[47.443264, 8.6818953]]),
+imageUrl3_1= "/media/thanu/raghavshdd1/html/13.June 2017/band1.png",
+imageUrl3_2= "/media/thanu/raghavshdd1/html/13.June 2017/band2.png",
+imageUrl3_3= "/media/thanu/raghavshdd1/html/13.June 2017/band3.png",
+imageUrl3_4= "/media/thanu/raghavshdd1/html/13.June 2017/band4.png",
+imageUrl3_5= "/media/thanu/raghavshdd1/html/13.June 2017/band5.png",
+imageUrl3_6= "/media/thanu/raghavshdd1/html/13.June 2017/band6.png",
+imageUrl3_7= "/media/thanu/raghavshdd1/html/13.June 2017/band7.png",
+imageUrl3_8= "/media/thanu/raghavshdd1/html/13.June 2017/band8.png",
+imageUrl3_9= "/media/thanu/raghavshdd1/html/13.June 2017/band9.png",
+imageUrl3_10= "/media/thanu/raghavshdd1/html/13.June 2017/band10.png",
+imageUrl3_11= "/media/thanu/raghavshdd1/html/13.June 2017/band11.png",
+imageUrl3_12= "/media/thanu/raghavshdd1/html/13.June 2017/band12.png",
+imageUrl3_13= "/media/thanu/raghavshdd1/html/13.June 2017/band13.png",
+imageUrl3_14= "/media/thanu/raghavshdd1/html/13.June 2017/band14.png",
+imageUrl3_15= "/media/thanu/raghavshdd1/html/13.June 2017/band15.png",
+imageUrl3_16= "/media/thanu/raghavshdd1/html/13.June 2017/band16.png",
+imageUrl3_17= "/media/thanu/raghavshdd1/html/13.June 2017/band17.png",
+imageUrl3_18= "/media/thanu/raghavshdd1/html/13.June 2017/band18.png",
+imageUrl3_19= "/media/thanu/raghavshdd1/html/13.June 2017/band19.png",
+imageUrl3_20= "/media/thanu/raghavshdd1/html/13.June 2017/band20.png",
+imageUrl3_21= "/media/thanu/raghavshdd1/html/13.June 2017/band21.png",
+imageUrl3_22= "/media/thanu/raghavshdd1/html/13.June 2017/band22.png",
+imageUrl3_23= "/media/thanu/raghavshdd1/html/13.June 2017/band23.png",
+imageUrl3_24= "/media/thanu/raghavshdd1/html/13.June 2017/band24.png",
+imageUrl3_25= "/media/thanu/raghavshdd1/html/13.June 2017/band25.png",
+imageUrl3_26= "/media/thanu/raghavshdd1/html/13.June 2017/Segmentation.png",
+imageBounds3= L.latLngBounds([
+[47.444794, 8.685091],
+[47.443459, 8.6825228]]);
+         	
+				                
+				var map = L.mapbox.map("map")
+				    .setView([47.3, 8.5], 10)
+				    .fitBounds(imageBounds1);    
+				L.control.layers({
+				    "Mapbox Satellite": L.mapbox.tileLayer("mapbox.satellite").addTo(map),
+				    "Mapbox Streets": L.mapbox.tileLayer("mapbox.streets")
+				}).addTo(map);
+				var imageGroup = L.layerGroup().addTo(map);
+				var layers = document.getElementById("menu-ui");
+				// Create image switchers
+				var linkRGB = document.createElement("a");
+				    linkRGB.href = "#";
+				    linkRGB.className = "active";
+				    linkRGB.innerHTML = "RGB";
+				var linkNIR = document.createElement("a");
+				    linkNIR.href = "#";
+				    linkNIR.className = "active";
+				    linkNIR.innerHTML = "NIR";    
+				var linkGrey = document.createElement("a");
+				    linkGrey.href = "#";
+				    linkGrey.className = "active";
+				    linkGrey.innerHTML = "Greyscale"; 
+				var linkGRE = document.createElement("a");
+				    linkGRE.href = "#";
+				    linkGRE.className = "active";
+				    linkGRE.innerHTML = "Green";  
+				var linkREG = document.createElement("a");
+				    linkREG.href = "#";
+				    linkREG.className = "active";
+				    linkREG.innerHTML = "REG";         
+				var linkNDVI = document.createElement("a");
+				    linkNDVI.href = "#";
+				    linkNDVI.className = "active";
+				    linkNDVI.innerHTML = "NDVI";  
+				var linkRED = document.createElement("a");
+				    linkRED.href = "#";
+				    linkRED.className = "active";
+				    linkRED.innerHTML = "RED";  				 
+				var linkSGR = document.createElement("a");
+				    linkSGR.href = "#"; 
+				    linkSGR.className = "active";
+				    linkSGR.innerHTML = "SGR";    
+				var linkEGI = document.createElement("a");
+				    linkEGI.href = "#"; 
+				    linkEGI.className = "active"; 
+				    linkEGI.innerHTML = "EGI";
+				var linkband1 = document.createElement("a");
+				    linkband1.href = "#"; 
+				    linkband1.className = "active"; 
+				    linkband1.innerHTML = "700nm";
+				var linkband2 = document.createElement("a");
+				    linkband2.href = "#"; 
+				    linkband2.className = "active"; 
+				    linkband2.innerHTML = "714nm"; 
+				var linkband3 = document.createElement("a");
+				    linkband3.href = "#"; 
+				    linkband3.className = "active"; 
+				    linkband3.innerHTML = "739nm";
+				var linkband4 = document.createElement("a");
+				    linkband4.href = "#"; 
+				    linkband4.className = "active"; 
+				    linkband4.innerHTML = "753nm";
+				var linkband5 = document.createElement("a");
+				    linkband5.href = "#"; 
+				    linkband5.className = "active"; 
+				    linkband5.innerHTML = "765nm";
+				var linkband6 = document.createElement("a");
+				    linkband6.href = "#"; 
+				    linkband6.className = "active"; 
+				    linkband6.innerHTML = "778nm";
+				var linkband7 = document.createElement("a");
+				    linkband7.href = "#"; 
+				    linkband7.className = "active"; 
+				    linkband7.innerHTML = "791nm";
+				var linkband8 = document.createElement("a");
+				    linkband8.href = "#"; 
+				    linkband8.className = "active"; 
+				    linkband8.innerHTML = "803nm";
+				var linkband9 = document.createElement("a");
+				    linkband9.href = "#"; 
+				    linkband9.className = "active"; 
+				    linkband9.innerHTML = "816nm";
+				var linkband10 = document.createElement("a");
+				    linkband10.href = "#"; 
+				    linkband10.className = "active"; 
+				    linkband10.innerHTML = "828nm";
+				var linkband11 = document.createElement("a");
+				    linkband11.href = "#"; 
+				    linkband11.className = "active"; 
+				    linkband11.innerHTML = "845nm";
+				var linkband12 = document.createElement("a");
+				    linkband12.href = "#"; 
+				    linkband12.className = "active"; 
+				    linkband12.innerHTML = "857nm"; 
+				var linkband13 = document.createElement("a");
+				    linkband13.href = "#"; 
+				    linkband13.className = "active"; 
+				    linkband13.innerHTML = "868nm";
+				var linkband14 = document.createElement("a");
+				    linkband14.href = "#"; 
+				    linkband14.className = "active"; 
+				    linkband14.innerHTML = "878nm";
+				var linkband15 = document.createElement("a");
+				    linkband15.href = "#"; 
+				    linkband15.className = "active"; 
+				    linkband15.innerHTML = "889nm";
+				var linkband16 = document.createElement("a");
+				    linkband16.href = "#"; 
+				    linkband16.className = "active"; 
+				    linkband16.innerHTML = "898nm";
+				var linkband17 = document.createElement("a");
+				    linkband17.href = "#"; 
+				    linkband17.className = "active"; 
+				    linkband17.innerHTML = "907nm";
+				var linkband18 = document.createElement("a");
+				    linkband18.href = "#"; 
+				    linkband18.className = "active"; 
+				    linkband18.innerHTML = "915nm";
+				var linkband19 = document.createElement("a");
+				    linkband19.href = "#"; 
+				    linkband19.className = "active"; 
+				    linkband19.innerHTML = "931nm";
+				var linkband20 = document.createElement("a");
+				    linkband20.href = "#"; 
+				    linkband20.className = "active"; 
+				    linkband20.innerHTML = "938nm";
+				var linkband21 = document.createElement("a");
+				    linkband21.href = "#"; 
+				    linkband21.className = "active"; 
+				    linkband21.innerHTML = "948nm";
+				var linkband22 = document.createElement("a");
+				    linkband22.href = "#"; 
+				    linkband22.className = "active"; 
+				    linkband22.innerHTML = "954nm"; 
+				var linkband23 = document.createElement("a");
+				    linkband23.href = "#"; 
+				    linkband23.className = "active"; 
+				    linkband23.innerHTML = "965nm";
+				var linkband24 = document.createElement("a");
+				    linkband24.href = "#"; 
+				    linkband24.className = "active"; 
+				    linkband24.innerHTML = "968nm";
+				var linkband25 = document.createElement("a");
+				    linkband25.href = "#"; 
+				    linkband25.className = "active"; 
+				    linkband25.innerHTML = "974nm";
+				var linkSegmentation = document.createElement("a");
+				    linkSegmentation.href = "#"; 
+				    linkSegmentation.className = "active"; 
+				    linkSegmentation.innerHTML = "Segmentation";    				    				    				    				    				    				    				    				    				    				          
+     			<!-- DEFAULT DATASET -->
+addImage(imageUrl1_1,imageBounds1,linkNDVI, imageGroup);
+layers.appendChild(linkNDVI);
+addImage(imageUrl1_2,imageBounds1,linkNIR, imageGroup);
+layers.appendChild(linkNIR);
+addImage(imageUrl1_3,imageBounds1,linkRED, imageGroup);
+layers.appendChild(linkRED);
+addImage(imageUrl1_4,imageBounds1,linkRGB, imageGroup);
+layers.appendChild(linkRGB);
+     			
+				
+				var date = [
+				<!-- ADD DATES OF DATASETS -->
+"13.April 2017",
+"05.May 2017",
+"13.June 2017",
+
+
+				];
+				
+				document.getElementById("dateToShow").innerText = date[0];				
+				
+				var coordinates = document.getElementById("coordinates");
+				
+				var marker = L.marker([47.45, 8.6817], {
+				    icon: L.mapbox.marker.icon({
+				      "marker-color": "#4cbe38"
+				    }),
+				    draggable: true
+				}).addTo(map);
+				
+				marker.on("dragend", ondragend);
+				
+				ondragend();
+				
+				var featureGroup = L.featureGroup().addTo(map);
+				
+				var drawControl = new L.Control.Draw({
+				  edit: {
+				    featureGroup: featureGroup
+				  },
+				  draw: {
+				    polygon: true,
+				    polyline: false,
+				    rectangle: false,
+				    circle: false,
+				    marker: false
+				  }
+				}).addTo(map);
+				
+				drawControl.setDrawingOptions({
+				    polygon: {
+				    	shapeOptions: {
+				        	color: "#4cbe38"
+				        }
+				    }
+				});
+				
+				map.on("draw:created", showPolygonArea);
+				map.on("draw:edited", showPolygonAreaEdited);
+				
+				// Functions
+				document.getElementById("slider").addEventListener("input", function(e) {
+				   var dataSet = parseInt(e.target.value);
+					document.getElementById("dateToShow").innerText = date[dataSet];
+
+					<!-- SWITCH BETWEEN DATASETS -->
+if (dataSet == 0) {
+imageGroup.clearLayers();
+while (layers.firstChild) {
+layers.removeChild(layers.firstChild);
+}
+addImage(imageUrl1_1,imageBounds1,linkNDVI, imageGroup);
+layers.appendChild(linkNDVI);
+linkNDVI.className = "active";
+addImage(imageUrl1_2,imageBounds1,linkNIR, imageGroup);
+layers.appendChild(linkNIR);
+linkNIR.className = "active";
+addImage(imageUrl1_3,imageBounds1,linkRED, imageGroup);
+layers.appendChild(linkRED);
+linkRED.className = "active";
+addImage(imageUrl1_4,imageBounds1,linkRGB, imageGroup);
+layers.appendChild(linkRGB);
+linkRGB.className = "active";
+}
+if (dataSet == 1) {
+imageGroup.clearLayers();
+while (layers.firstChild) {
+layers.removeChild(layers.firstChild);
+}
+addImage(imageUrl2_1,imageBounds2,linkGRE, imageGroup);
+layers.appendChild(linkGRE);
+linkGRE.className = "active";
+addImage(imageUrl2_2,imageBounds2,linkNDVI, imageGroup);
+layers.appendChild(linkNDVI);
+linkNDVI.className = "active";
+addImage(imageUrl2_3,imageBounds2,linkNIR, imageGroup);
+layers.appendChild(linkNIR);
+linkNIR.className = "active";
+addImage(imageUrl2_4,imageBounds2,linkRED, imageGroup);
+layers.appendChild(linkRED);
+linkRED.className = "active";
+addImage(imageUrl2_5,imageBounds2,linkREG, imageGroup);
+layers.appendChild(linkREG);
+linkREG.className = "active";
+addImage(imageUrl2_6,imageBounds2,linkRGB, imageGroup);
+layers.appendChild(linkRGB);
+linkRGB.className = "active";
+}
+if (dataSet == 2) {
+imageGroup.clearLayers();
+while (layers.firstChild) {
+layers.removeChild(layers.firstChild);
+}
+addImage(imageUrl3_1,imageBounds3,linkband1, imageGroup);
+layers.appendChild(linkband1);
+linkband1.className = "active";
+addImage(imageUrl3_2,imageBounds3,linkband2, imageGroup);
+layers.appendChild(linkband2);
+linkband2.className = "active";
+addImage(imageUrl3_3,imageBounds3,linkband3, imageGroup);
+layers.appendChild(linkband3);
+linkband3.className = "active";
+addImage(imageUrl3_4,imageBounds3,linkband4, imageGroup);
+layers.appendChild(linkband4);
+linkband4.className = "active";
+addImage(imageUrl3_5,imageBounds3,linkband5, imageGroup);
+layers.appendChild(linkband5);
+linkband5.className = "active";
+addImage(imageUrl3_6,imageBounds3,linkband6, imageGroup);
+layers.appendChild(linkband6);
+linkband6.className = "active";
+addImage(imageUrl3_7,imageBounds3,linkband7, imageGroup);
+layers.appendChild(linkband7);
+linkband7.className = "active";
+addImage(imageUrl3_8,imageBounds3,linkband8, imageGroup);
+layers.appendChild(linkband8);
+linkband8.className = "active";
+addImage(imageUrl3_9,imageBounds3,linkband9, imageGroup);
+layers.appendChild(linkband9);
+linkband9.className = "active";
+addImage(imageUrl3_10,imageBounds3,linkband10, imageGroup);
+layers.appendChild(linkband10);
+linkband10.className = "active";
+addImage(imageUrl3_11,imageBounds3,linkband11, imageGroup);
+layers.appendChild(linkband11);
+linkband11.className = "active";
+addImage(imageUrl3_12,imageBounds3,linkband12, imageGroup);
+layers.appendChild(linkband12);
+linkband12.className = "active";
+addImage(imageUrl3_13,imageBounds3,linkband13, imageGroup);
+layers.appendChild(linkband13);
+linkband13.className = "active";
+addImage(imageUrl3_14,imageBounds3,linkband14, imageGroup);
+layers.appendChild(linkband14);
+linkband14.className = "active";
+addImage(imageUrl3_15,imageBounds3,linkband15, imageGroup);
+layers.appendChild(linkband15);
+linkband15.className = "active";
+addImage(imageUrl3_16,imageBounds3,linkband16, imageGroup);
+layers.appendChild(linkband16);
+linkband16.className = "active";
+addImage(imageUrl3_17,imageBounds3,linkband17, imageGroup);
+layers.appendChild(linkband17);
+linkband17.className = "active";
+addImage(imageUrl3_18,imageBounds3,linkband18, imageGroup);
+layers.appendChild(linkband18);
+linkband18.className = "active";
+addImage(imageUrl3_19,imageBounds3,linkband19, imageGroup);
+layers.appendChild(linkband19);
+linkband19.className = "active";
+addImage(imageUrl3_20,imageBounds3,linkband20, imageGroup);
+layers.appendChild(linkband20);
+linkband20.className = "active";
+addImage(imageUrl3_21,imageBounds3,linkband21, imageGroup);
+layers.appendChild(linkband21);
+linkband21.className = "active";
+addImage(imageUrl3_22,imageBounds3,linkband22, imageGroup);
+layers.appendChild(linkband22);
+linkband22.className = "active";
+addImage(imageUrl3_23,imageBounds3,linkband23, imageGroup);
+layers.appendChild(linkband23);
+linkband23.className = "active";
+addImage(imageUrl3_24,imageBounds3,linkband24, imageGroup);
+layers.appendChild(linkband24);
+linkband24.className = "active";
+addImage(imageUrl3_25,imageBounds3,linkband25, imageGroup);
+layers.appendChild(linkband25);
+linkband25.className = "active";
+addImage(imageUrl3_26,imageBounds3,linkSegmentation, imageGroup);
+layers.appendChild(linkSegmentation);
+linkSegmentation.className = "active";
+}
+					 
+				});
+				
+				function addImage(imageUrl, imageBounds, link, group) {
+					var image = L.imageOverlay(imageUrl, imageBounds)
+						.addTo(group);
+				
+				    link.onclick = function(e) {
+				        e.preventDefault();
+				        e.stopPropagation();
+						  
+						  if (this.className == "active") {
+				        		image.setOpacity(0);
+				        		this.className = "inactive";
+				        } else {
+				        		image.setOpacity(1);
+				        		this.className = "active";				
+				        }
+						  
+				    };
+				        
+				}
+				
+				function ondragend() {
+				    var m = marker.getLatLng();
+				    coordinates.innerHTML = "Latitude: " + m.lat + "<br />Longitude: " + m.lng;
+				}
+				
+				function showPolygonAreaEdited(e) {
+				  e.layers.eachLayer(function(layer) {
+				    showPolygonArea({ layer: layer });
+				  });
+				}
+				function showPolygonArea(e) {
+				  featureGroup.clearLayers();
+				  featureGroup.addLayer(e.layer);
+				  e.layer.bindPopup("Area: " + (LGeo.area(e.layer)).toFixed(2) + " m<sup>2</sup>");
+				  e.layer.openPopup();
+				}			
+			</script>
+	
+	</div>
+</body>
+
+</html>

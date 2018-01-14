@@ -1,0 +1,21 @@
+Calibration results 
+====================
+Camera-system parameters:
+	cam0 (/falcon/realsense/color/image_raw):
+	 type: <class 'aslam_cv.libaslam_cv_python.DistortedPinholeCameraGeometry'>
+	 distortion: [ 0.1756943  -0.30041768 -0.00070726  0.01888204] +- [ 0.01666222  0.03494967  0.00129773  0.00260677]
+	 projection: [ 1383.06870368  1380.30057643  1002.51489572   550.69936397] +- [ 21.91783083  21.64238077   9.80206303   5.64627051]
+	 reprojection error: [-0.000001, -0.000008] +- [0.636385, 0.583994]
+
+
+
+Target configuration
+====================
+
+  Type: checkerboard
+  Rows
+    Count: 7
+    Distance: 0.05 [m]
+  Cols
+    Count: 6
+    Distance: 0.05 [m]
