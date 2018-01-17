@@ -1,0 +1,19 @@
+classdef Convolution2DHostStrategy < nnet.internal.cnn.layer.util.ExecutionStrategy
+    % Convolution2DHostStrategy   Execution strategy for running the convolution on the host
+    
+    %   Copyright 2016 The MathWorks, Inc.
+    
+    methods
+        function [Z, memory] = forward(~, X, ...
+                weights, bias, ...
+                verticalPad, horizontalPad, ...
+                verticalStride, horizontalStride)
+            Z = nnet.internal.cnnhost.convolveForward2D( ...
+                X, weights, ...
+                verticalPad, horizontalPad, ...
+                verticalStride, horizontalStride);
+            Z = Z + bias;
+            memory = [];
+        end
+    end
+end

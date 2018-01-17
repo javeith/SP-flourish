@@ -1,0 +1,19 @@
+classdef Convolution2DGPUStrategy < nnet.internal.cnn.layer.util.ExecutionStrategy
+    % Convolution2DGPUStrategy   Execution strategy for running the convolution on the host
+    
+    %   Copyright 2016 The MathWorks, Inc.
+    
+    methods
+        function [Z, memory] = forward(~, X, ...
+                weights, bias, ...
+                verticalPad, horizontalPad, ...
+                verticalStride, horizontalStride)
+            Z = nnet.internal.cnngpu.convolveForward2D( ...
+                X, weights, ...
+                verticalPad, horizontalPad, ...
+                verticalStride, horizontalStride);
+            Z = arrayfun(@plus, Z, bias);
+            memory = [];
+        end
+    end
+end
