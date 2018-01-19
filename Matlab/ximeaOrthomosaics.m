@@ -2,7 +2,7 @@
 clc, clear
 
 %% raghavshdd1 location
-hddLoc = '/media/thanu/raghavshdd1/';
+hddLoc = '/Volumes/mac_jannic_2017/';
 
 %% Inputs:
 % NIR25 or VIS16?
