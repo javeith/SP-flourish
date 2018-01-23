@@ -22,6 +22,12 @@ Mode = 'Average';
 NoN = 1; % Number of neighbors [(2 * NoN + 1) x (2 * NoN + 1)] (gets blurry with NoN = 2)
 NoI = 5; % Number of iterations
 
+% Display counters
+
+disp_NoP = 1;
+disp_columns = 0;
+disp_NoI = 1;
+
 
 % - Interpolate between nonzero pixels to fill gaps: Find
 
@@ -31,6 +37,9 @@ NoI = 5; % Number of iterations
 
 %% Read cam0 point cloud from Pix4D
 cam1_PC = plyread(pcName);
+disp(['Input: ' pcName '.']);
+disp(['Intrinsics: ' camyaml '.']);
+disp(['Output: ' output '.']);
 
 % Number of points in cloud
 NoP = size(cam1_PC.Location,1);
@@ -93,8 +102,13 @@ min_z = min(cam1_PC.Location(:,3));
 zBuffer = ones(imageHeightMosaic, imageWidthMosaic) * floor(min_z);
 
 for point = 1:NoP
-    u = ceil((LocationMatrix(point,1) + norm(min_x)) / GSD_x);
+%     u = ceil((LocationMatrix(point,1) + norm(min_x)) / GSD_x);
+%     v = ceil((max_y - LocationMatrix(point,2)) / GSD_y);
+% Jannic Veith Edit: make this operation valid for all min_x, min_y, not
+% % only for min_x < 0 and min_y > 0.
+    u = ceil((LocationMatrix(point,1) - min_x) / GSD_x);
     v = ceil((max_y - LocationMatrix(point,2)) / GSD_y);
+
     
     if u == 0
         u = 1;
@@ -110,10 +124,11 @@ for point = 1:NoP
     end
     
     % Display information
-    if mod(point,100000) == 0
-        disp([num2str(point) ' out of ' num2str(NoP) ' points']);
+    if disp_NoP == 1
+        if mod(point,100000) == 0
+            disp(['Filling image, ' num2str(point) ' out of ' num2str(NoP) ' points']);
+        end
     end
-    
 end
 
 %% Save original image as bitmap
@@ -243,8 +258,10 @@ for itIt = 1:NoI
             
         end
         
-        if mod(uIt,100) == 0
-            disp([num2str(uIt) ' out of ' num2str(u) ' imagecolumns']);
+        if disp_columns == 1
+            if mod(uIt,100) == 0
+                disp(['Interpolating images, ' num2str(uIt) ' out of ' num2str(u) ' imagecolumns']);
+            end
         end
         
     end
@@ -254,6 +271,10 @@ for itIt = 1:NoI
     green = filledGreen;
     blue = filledBlue;
     
+    %Display Iterations
+    if disp_NoI == 1
+        disp(['Completed ' num2str(itIt) ' out of ' num2str(NoI) ' iterations of Interpolation.']);
+    end
 end
 
 % Assign back to pcMosaic
