@@ -1,3 +1,22 @@
+%% Information
+% 
+% This function creates orthomosaics as .png pictures from pointclouds.
+% The necessary formats for this function to work are as follows:
+% 
+%     - "hddLoc" sets the path for the harddrive
+%     - "cloudLoc" sets the path of the folder containing all the data
+%     - "dataLabels" are the names of the folders in cloudLoc in this case
+%     the label classes
+%     - "intrinsicsIndex" shows which dataLabel belongs to which intrinsics
+%     - "filterTypes" are subfolders in dataLabels. In those folders is the 
+%     cloud point data
+%     
+% Each point cloud set needs to be called "band*.ply", where * is the band 
+% index. In each dataLabel folder here needs to be a folder called 
+% "NIR25_Orthomosaic" and "VIS16_Orthomosaic", this is where the orthomosaics
+% will be stored.
+% 
+
 %% Create orthomosaics for all bands
 clc, clear
 

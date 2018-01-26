@@ -102,10 +102,11 @@ min_z = min(cam1_PC.Location(:,3));
 zBuffer = ones(imageHeightMosaic, imageWidthMosaic) * floor(min_z);
 
 for point = 1:NoP
+    
 %     u = ceil((LocationMatrix(point,1) + norm(min_x)) / GSD_x);
 %     v = ceil((max_y - LocationMatrix(point,2)) / GSD_y);
-% Jannic Veith Edit: make this operation valid for all min_x, min_y, not
-% % only for min_x < 0 and min_y > 0.
+% Jannic Veith Edit: make this operation valid for all min_x, not
+% only for min_x < 0 
     u = ceil((LocationMatrix(point,1) - min_x) / GSD_x);
     v = ceil((max_y - LocationMatrix(point,2)) / GSD_y);
 
