@@ -27,27 +27,28 @@ close all;
 
 basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/';
 
-inPathNIR = [ basePath, 'Ximea_Tamron/20170510/Orthomosaics/' ];
-inPathVIS = [ basePath, 'Ximea_Tamron/20170510/VIS_Orthomosaics/' ];
+inPathNIR = [ basePath, 'FIP/20170622/testSet/Orthomosaics/' ];
+inPathVIS = [ basePath, 'FIP/20170622/testSet/VIS_Orthomosaics/' ];
 
 % Path to save the labeled data as .mat file
-saveLabelPath = [ basePath, 'xFcnClassifier/Labels/XimeaT20170510.mat' ];
+saveLabelPath = [ basePath, 'xFcnClassifier/Labels/FIP20170622' ];
 
 % Cutoff NDVI for best separation of plants and soil. If you want to see
 % the NDVI image for point selection, set cutoffON to false. The data
 % labeling still uses the cutoffNDVI when cutoffON is false.
 cutoffNDVI = .505;
+NDVIthresh = [.4, .5];
 cutoffON = false;
 
 % createTraining=True: Create image set where intensity = 0 if label = 0 at
 % location saveDataPath
 createTraining = true;
-saveDataPath = [ basePath, 'xFcnClassifier/Data/Ximea_Tamron/20170510/' ];
+saveDataPath = [ basePath, 'xFcnClassifier/Data/FIP/20170622/' ];
 
 % Padding
 addPadding = true;
-finalSize = [1500,1500];
-
+finalSize = [1600,1600]; % [X,Y]
+    
 
 %% Labeling
 %
@@ -79,6 +80,15 @@ orthomosaicBand8 = im2double(rgb2gray(imread([inPathNIR,'Band8.png'])));
 % (Band8 - Band1) / (Band8 + Band1) = (803-700) / (803+700)
 NDVI = (orthomosaicBand8 - orthomosaicBand1) ./ (orthomosaicBand1 + orthomosaicBand8);
 
+clear orthomosaicBand1 orthomosaicBand8
+
+% Plot histogram
+figure(1)
+imhist(NDVI)
+yl = ylim;
+line([NDVIthresh(1),NDVIthresh(1)],ylim,'Color','red','LineWidth',1)
+line([NDVIthresh(2),NDVIthresh(2)],ylim,'Color','red','LineWidth',1)
+
 % Threshholding for plotting
 CutNDVI=im2uint8(NDVI);
 if cutoffON
@@ -86,64 +96,90 @@ if cutoffON
     CutNDVI(NDVI< cutoffNDVI) = 0;
 end
 
-labeledPicture = zeros(size(NDVI,1),size(NDVI,2),1);
+labeledPicture = zeros(size(NDVI,1),size(NDVI,2),1,'uint8');
 
 
-%% Keep looping for every label the user wants to set.
+%% Main: Keep looping for every label the user wants to set.
 
 while 1
     colorPicture = fillColors(CutNDVI,labeledPicture,colors);
-    plotColorImage(1,colorPicture,classNames,classLabel,colors)
-    label = choosedialog(classNames);
+    plotColorImage(2,colorPicture,classNames,classLabel,colors)
+    label = chooseGUI(classNames);
     if strcmp(label, 'done' )
         break;
     end
-    figure(2)
+    figure(3)
     [edges(:,1),edges(:,2),~] = impixel(colorPicture);
     labeledPicture = labelPicture(labeledPicture,edges,label,classLabel,cutoffNDVI,NDVI);
     clear edges
 end
-if ishandle(2)
-    close(2);
+if ishandle(3)
+    close(3);
 end
-% Save labels as .mat
-save(saveLabelPath,'labeledPicture');
-
-%% Modifies the images according to labeledPicture
-
 if createTraining
-    createTrainingData(inPathNIR,inPathVIS,saveDataPath,labeledPicture);
+    createTrainingData(inPathNIR,inPathVIS,saveDataPath,labeledPicture,addPadding,finalSize);
 end
+if addPadding
+    labeledPicture = addPaddingToImage(labeledPicture,finalSize);
+end
+
+% Save labels as .mat
+% imwrite(labeledPicture,[saveLabelPath,'.png'])
+save([saveLabelPath,'.mat'],'labeledPicture');
 
 
 %% Function testing
+
+% testImage = addPaddingToImage(NDVI,finalSize);
+% figure(1)
+% imshow(NDVI)
+% figure(2)
+% imshow(testImage)
 
 % isInsidePolygon([361,667],edgesCorn)
 
 
 %% Functions
 
-function createTrainingData(inPathNIR,inPathVIS,outDataPath,labeledPicture)
+function paddedImage = addPaddingToImage(image,finalSize)
+paddedImage = zeros(finalSize(2),finalSize(1));
+
+xLowerPadding = ceil( (finalSize(1) - size(image,2))/2 );
+yLowerPadding = ceil( (finalSize(2) - size(image,1))/2 );
+
+yIndex1 = yLowerPadding+1;
+yIndex2 = yLowerPadding+size(image,1);
+xIndex1 = xLowerPadding+1;
+xIndex2 = xLowerPadding+size(image,2);
+
+paddedImage(yIndex1:yIndex2, xIndex1:xIndex2) = image;
+end
+
+function createTrainingData(inPathNIR,inPathVIS,outDataPath,labeledPicture,...
+    addPadding, finalSize)
 mkdir(outDataPath);
 for i=1:25
     inPath = [inPathNIR,'Band',num2str(i),'.png'];
     outPath = [outDataPath,'Band',num2str(i),'.png'];
-    createAndSaveOneTrainingImage(labeledPicture, inPath, outPath);
+    createAndSaveOneTrainingImage(labeledPicture, inPath, outPath, addPadding, finalSize);
     if i<17
         inPath = [inPathVIS,'Band',num2str(i),'.png'];
         outPath = [outDataPath,'Band',num2str(i+25),'.png'];
-        createAndSaveOneTrainingImage(labeledPicture, inPath, outPath);
+        createAndSaveOneTrainingImage(labeledPicture, inPath, outPath, addPadding, finalSize);
     end
 end
 
 end
 
-function createAndSaveOneTrainingImage(labeledPicture, inPath, outPath)
-temp = imread(inPath);
+function createAndSaveOneTrainingImage(labeledPicture, inPath, outPath, ...
+    addPadding, finalSize)
+temp = im2double(rgb2gray(imread(inPath)));
 temp( labeledPicture==0 ) = 0;
+if addPadding
+    temp = addPaddingToImage(temp,finalSize);
+end
 imwrite(temp(:,:,1),outPath);
 end
-
 
 function plotColorImage(figureNumber,colorImage,classNames,classLabel,colors)
 
@@ -184,6 +220,11 @@ for ii=1:size(inPicture,1)
                     outPicture(ii,jj)=classLabel(label);
                 end
             end
+            if NDVI(ii,jj) < cutoffNDVI
+                if isInsidePolygon([jj,ii],edges) == true
+                    outPicture(ii,jj)=classLabel('Soil');
+                end
+            end
         end
     end
 end
@@ -214,7 +255,7 @@ end
 x=true;
 end
 
-function choice = choosedialog(choosableParameters)
+function choice = chooseGUI(choosableParameters)
 
 d = dialog('Position',[300 300 250 150],'Name','Select label');
 
