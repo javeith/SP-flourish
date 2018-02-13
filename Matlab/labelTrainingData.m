@@ -16,22 +16,22 @@
 % Input orthomosaic paths are pathBand1 and pathBand8.
 % The labeled image will be saved to the path savePath as a .mat file.
 %
+% If createTraining==true, new images at location saveDataPath will be
+% created where the intensity of every pixel with label 0 (background) will
+% be set to 0.
 
 %% Set options
 clc
 clear all;
 close all;
 
-inPathNIR = '/Volumes/mac_jannic_2017/thanujan/Datasets/Ximea_Tamron/20170510/Orthomosaics/';
-inPathVIS = '/Volumes/mac_jannic_2017/thanujan/Datasets/Ximea_Tamron/20170510/VIS_Orthomosaics/';
+basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/';
 
-% Paths for orthomosaics for Band1 (700nm) and Band8 (803nm)
-pathBand1 = '/Volumes/mac_jannic_2017/thanujan/Datasets/Ximea_Tamron/20170510/Orthomosaics/Band1.png';
-pathBand8 = '/Volumes/mac_jannic_2017/thanujan/Datasets/Ximea_Tamron/20170510/Orthomosaics/Band8.png';
+inPathNIR = [ basePath, 'Ximea_Tamron/20170510/Orthomosaics/' ];
+inPathVIS = [ basePath, 'Ximea_Tamron/20170510/VIS_Orthomosaics/' ];
 
 % Path to save the labeled data as .mat file
-saveDataPath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/Data/';
-saveLabelPath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/Labels/XimeaT20170510.mat';
+saveLabelPath = [ basePath, 'xFcnClassifier/Labels/XimeaT20170510.mat' ];
 
 % Cutoff NDVI for best separation of plants and soil. If you want to see
 % the NDVI image for point selection, set cutoffON to false. The data
@@ -39,8 +39,14 @@ saveLabelPath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/Label
 cutoffNDVI = .505;
 cutoffON = false;
 
-% adjustData=True: For all unlabeled pixels set image pixel intensities to 0
-adjustData = false;
+% createTraining=True: Create image set where intensity = 0 if label = 0 at
+% location saveDataPath
+createTraining = true;
+saveDataPath = [ basePath, 'xFcnClassifier/Data/Ximea_Tamron/20170510/' ];
+
+% Padding
+addPadding = true;
+finalSize = [1500,1500];
 
 
 %% Labeling
@@ -67,8 +73,8 @@ colors= [0,0,0;0,0,255;255,0,0;0,255,0;255,128,0;110,25,0;125,0,255;255,255,0;0,
 %% Load and initialize images
 
 % Loading images and computing NDVI
-orthomosaicBand1 = im2double(rgb2gray(imread(pathBand1)));
-orthomosaicBand8 = im2double(rgb2gray(imread(pathBand8)));
+orthomosaicBand1 = im2double(rgb2gray(imread([inPathNIR,'Band1.png'])));
+orthomosaicBand8 = im2double(rgb2gray(imread([inPathNIR,'Band8.png'])));
 
 % (Band8 - Band1) / (Band8 + Band1) = (803-700) / (803+700)
 NDVI = (orthomosaicBand8 - orthomosaicBand1) ./ (orthomosaicBand1 + orthomosaicBand8);
@@ -100,12 +106,13 @@ end
 if ishandle(2)
     close(2);
 end
-
+% Save labels as .mat
 save(saveLabelPath,'labeledPicture');
 
-% Modifies the images according to labeledPicture
-if adjustData
-    adjustImageData(inPathNIR,inPathVIS,saveDataPath,labeledPicture);
+%% Modifies the images according to labeledPicture
+
+if createTraining
+    createTrainingData(inPathNIR,inPathVIS,saveDataPath,labeledPicture);
 end
 
 
@@ -116,22 +123,27 @@ end
 
 %% Functions
 
-function adjustImageData(inPathNIR,inPathVIS,saveDataPath,labeledPicture)
-
+function createTrainingData(inPathNIR,inPathVIS,outDataPath,labeledPicture)
+mkdir(outDataPath);
 for i=1:25
-    temp = imread([inPathNIR,'Band',num2str(i),'.png']);
-    temp( labeledPicture==0 ) =0;
-    imwrite(temp,[saveDataPath,'Band',num2str(i),'.png']);
-    clear temp
+    inPath = [inPathNIR,'Band',num2str(i),'.png'];
+    outPath = [outDataPath,'Band',num2str(i),'.png'];
+    createAndSaveOneTrainingImage(labeledPicture, inPath, outPath);
     if i<17
-        temp = imread([inPathVIS,'Band',num2str(i),'.png']);
-        temp( labeledPicture==0 ) =0;
-        imwrite(temp,[saveDataPath,'Band',num2str(i+25),'.png']);
-        clear temp
+        inPath = [inPathVIS,'Band',num2str(i),'.png'];
+        outPath = [outDataPath,'Band',num2str(i+25),'.png'];
+        createAndSaveOneTrainingImage(labeledPicture, inPath, outPath);
     end
 end
 
 end
+
+function createAndSaveOneTrainingImage(labeledPicture, inPath, outPath)
+temp = imread(inPath);
+temp( labeledPicture==0 ) = 0;
+imwrite(temp(:,:,1),outPath);
+end
+
 
 function plotColorImage(figureNumber,colorImage,classNames,classLabel,colors)
 
