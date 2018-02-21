@@ -10,7 +10,7 @@ FCNdisplayLabels(labelPath2,'FIP_20170622');
 FCNdisplayLabels(labelPath3,'FIP_20170802');
 FCNdisplayLabels(labelPath4,'XimeaT_20170613');
 
-saveas(1,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/FIP_20170531.png')
-saveas(2,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/FIP_20170622.png')
-saveas(3,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/FIP_20170802.png')
-saveas(4,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/XimeaT_20170613.png')
+saveas(1,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/aFIP_20170531.png')
+saveas(2,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/aFIP_20170622.png')
+saveas(3,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/aFIP_20170802.png')
+saveas(4,'/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/aXimeaT_20170613.png')

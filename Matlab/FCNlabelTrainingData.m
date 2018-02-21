@@ -37,12 +37,12 @@ saveLabelPath = [ basePath, 'xFcnClassifier/Labels/FIP20170622' ];
 % the NDVI image for point selection, set cutoffON to false. The data
 % labeling still uses the cutoffNDVI when cutoffON is false.
 cutoffNDVI = .505;
-NDVIthresh = [.4, .5];
-cutoffON = false;
+NDVIthresh = [.4, .505];
+cutoffON = true;
 
 % createTraining=True: Create image set where intensity = 0 if label = 0 at
 % location saveDataPath
-createTraining = true;
+createTraining = false;
 saveDataPath = [ basePath, 'xFcnClassifier/Data/FIP/20170622/' ];
 
 % Padding
@@ -86,7 +86,7 @@ clear orthomosaicBand1 orthomosaicBand8
 figure(1)
 imhist(NDVI)
 yl = ylim;
-line([NDVIthresh(1),NDVIthresh(1)],ylim,'Color','red','LineWidth',1)
+%line([NDVIthresh(1),NDVIthresh(1)],ylim,'Color','red','LineWidth',1)
 line([NDVIthresh(2),NDVIthresh(2)],ylim,'Color','red','LineWidth',1)
 
 % Threshholding for plotting
@@ -124,7 +124,7 @@ end
 
 % Save labels as .mat
 % imwrite(labeledPicture,[saveLabelPath,'.png'])
-save([saveLabelPath,'.mat'],'labeledPicture');
+%save([saveLabelPath,'.mat'],'labeledPicture');
 
 
 %% Function testing
