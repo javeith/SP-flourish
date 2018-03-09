@@ -5,14 +5,14 @@
 % 
 %     - "hddLoc" sets the path for the harddrive
 %     - "cloudLoc" sets the path of the folder containing all the data
-%     - "dataLabels" are the names of the folders in cloudLoc in this case
+%     - "dataLabels" are the names of the folders in cloudLoc, in this case
 %     the label classes
 %     - "intrinsicsIndex" shows which dataLabel belongs to which intrinsics
-%     - "filterTypes" are subfolders in dataLabels. In those folders is the 
-%     cloud point data
+%     - "filterTypes" are subfolders in dataLabels. In those folders there 
+%     are the point clouds
 %     
 % Each point cloud set needs to be called "band*.ply", where * is the band 
-% index. In each dataLabel folder here needs to be a folder called 
+% index. In each dataLabel folder there needs to be two folders called 
 % "NIR25_Orthomosaic" and "VIS16_Orthomosaic", this is where the orthomosaics
 % will be stored.
 % 

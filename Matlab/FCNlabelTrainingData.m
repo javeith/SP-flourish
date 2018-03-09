@@ -27,23 +27,23 @@ close all;
 
 basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/';
 
-inPathNIR = [ basePath, 'FIP/20170622/testSet/Orthomosaics/' ];
-inPathVIS = [ basePath, 'FIP/20170622/testSet/VIS_Orthomosaics/' ];
+inPathNIR = [ basePath, 'FIP/20170531/testSet/Orthomosaics/' ];
+inPathVIS = [ basePath, 'FIP/20170531/testSet/VIS_Orthomosaics/' ];
 
 % Path to save the labeled data as .mat file
-saveLabelPath = [ basePath, 'xFcnClassifier/Labels/FIP20170622' ];
+saveLabelPath = [ basePath, 'xFcnClassifier/trainLabels/FIP_20170531' ];
 
 % Cutoff NDVI for best separation of plants and soil. If you want to see
 % the NDVI image for point selection, set cutoffON to false. The data
 % labeling still uses the cutoffNDVI when cutoffON is false.
-cutoffNDVI = .505;
-NDVIthresh = [.4, .505];
+cutoffNDVI = .45;
+NDVIthresh = [.37, .41];
 cutoffON = true;
 
 % createTraining=True: Create image set where intensity = 0 if label = 0 at
 % location saveDataPath
-createTraining = false;
-saveDataPath = [ basePath, 'xFcnClassifier/Data/FIP/20170622/' ];
+createTraining = true;
+saveDataPath = [ basePath, 'xFcnClassifier/trainData/FIP/20170531/' ];
 
 % Padding
 addPadding = true;
@@ -124,7 +124,7 @@ end
 
 % Save labels as .mat
 % imwrite(labeledPicture,[saveLabelPath,'.png'])
-%save([saveLabelPath,'.mat'],'labeledPicture');
+save([saveLabelPath,'.mat'],'labeledPicture');
 
 
 %% Function testing

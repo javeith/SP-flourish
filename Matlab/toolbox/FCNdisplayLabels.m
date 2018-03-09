@@ -8,8 +8,10 @@ classLabel = containers.Map(classNames,classNumbers);
 colors= [0,0,0;0,0,255;255,0,0;0,255,0;255,128,0;110,25,0;125,0,255;255,255,0;0,137,255];
 
 % Call functions
-load(imagePath, 'testLabelPredict');
-colorImage = fillColors(zeros(size(testLabelPredict),'uint8'), testLabelPredict, colors);
+matArray = load(imagePath);
+matArrayName = fields(matArray);
+
+colorImage = fillColors(zeros(size(matArray.(matArrayName{1})),'uint8'), matArray.(matArrayName{1}), colors);
 plotColorImage( colorImage, classNames, classLabel, colors, imgTitle);
 
 % Functions
