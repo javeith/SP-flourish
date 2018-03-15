@@ -1,4 +1,4 @@
-basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/trainLabels/';
+basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/';
 
 resultList = dir([basePath,'*.mat']);
 for i=1:size(resultList,1)
