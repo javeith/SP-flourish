@@ -1,5 +1,7 @@
+close all
 
-sourcePath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testData/Ximea_Tamron/20170613/';
+sourcePath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testData/FIP/20170802/';
+savePath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/MatlabNNPredict/FIP_2017802';
 
 load(['/Volumes/mac_jannic_2017/thanujan/Datasets/xClassifier/x41bands/PatternNet/net.mat']);
 
@@ -17,16 +19,20 @@ testData = reshape(testData,[size1*size2,41]);
 
 result = net(transpose(testData));
 [~,binaryResult] = max(result);
-resultIMG = reshape(transpose(binaryResult),[size1,size2]);
-plotPredictions(resultIMG);
+Prediction = reshape(transpose(binaryResult),[size1,size2]);
+plotPredictions(Prediction);
+
+save([savePath,'.mat'],'Prediction');
+saveas(1,[savePath,'.png']);
 
 %% Functions
 
 
 function plotPredictions(resultIMG)
-%[soil, road, buckWheat, corn, grass, soyBean, sugarBeet, winterWheat]
+% Prediction output labeling from 1-8:
+% [soil, road, buckWheat, corn, grass, soyBean, sugarBeet, winterWheat]
 
-% Relabel NN output to my (usual) indexing.
+% Relabel NN output to my (usual) indexing. (see classnames below)
 plotImg = zeros(size(resultIMG));
 plotImg(resultIMG==1) = 5;
 plotImg(resultIMG==2) = 4;

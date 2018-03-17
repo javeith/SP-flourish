@@ -21,28 +21,28 @@
 % be set to 0.
 
 %% Set options
-clc
-clear all;
-close all;
+% clc
+% clear all;
+% close all;
 
 basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/';
 
-inPathNIR = [ basePath, 'FIP/20170531/testSet/Orthomosaics/' ];
-inPathVIS = [ basePath, 'FIP/20170531/testSet/VIS_Orthomosaics/' ];
+inPathNIR = [ basePath, 'Ximea_Tamron/20170613/Orthomosaics/' ];
+inPathVIS = [ basePath, 'Ximea_Tamron/20170613/VIS_Orthomosaics/' ];
 
 % Path to save the labeled data as .mat file
-saveLabelPath = [ basePath, 'xFcnClassifier/trainLabels/FIP_20170531' ];
+saveLabelPath = [ basePath, 'xFcnClassifier/testLabelTruth/Ximea_Tamron_20170613' ];
 
 % Cutoff NDVI for best separation of plants and soil. If you want to see
 % the NDVI image for point selection, set cutoffON to false. The data
-% labeling still uses the cutoffNDVI when cutoffON is false.
-cutoffNDVI = .45;
-NDVIthresh = [.37, .41];
+% labeling still uses the cutoffNDVI when cutoffON is false. Can have 1 or
+% 2 values.
+NDVIthresh = [.41, .48];
 cutoffON = true;
 
 % createTraining=True: Create image set where intensity = 0 if label = 0 at
 % location saveDataPath
-createTraining = true;
+createTraining = false;
 saveDataPath = [ basePath, 'xFcnClassifier/trainData/FIP/20170531/' ];
 
 % Padding
@@ -82,19 +82,33 @@ NDVI = (orthomosaicBand8 - orthomosaicBand1) ./ (orthomosaicBand1 + orthomosaicB
 
 clear orthomosaicBand1 orthomosaicBand8
 
+% Threshholding for plotting
+switch length(NDVIthresh)
+    case 1
+        lowerThresh = NDVIthresh;
+        upperThresh = NDVIthresh;
+    case 2
+        lowerThresh = NDVIthresh(1);
+        upperThresh = NDVIthresh(2);
+end
+
+CutNDVI=im2uint8(NDVI);
+if cutoffON
+    CutNDVI(NDVI>= upperThresh) = 255;
+    CutNDVI(NDVI< upperThresh) = 120;
+    CutNDVI(NDVI< lowerThresh) = 0;
+end
+
 % Plot histogram
 figure(1)
 imhist(NDVI)
 yl = ylim;
-%line([NDVIthresh(1),NDVIthresh(1)],ylim,'Color','red','LineWidth',1)
-line([NDVIthresh(2),NDVIthresh(2)],ylim,'Color','red','LineWidth',1)
 
-% Threshholding for plotting
-CutNDVI=im2uint8(NDVI);
-if cutoffON
-    CutNDVI(NDVI>= cutoffNDVI) = 255;
-    CutNDVI(NDVI< cutoffNDVI) = 0;
-end
+line([lowerThresh,lowerThresh],ylim,'Color','red','LineWidth',1)
+line([upperThresh,upperThresh],ylim,'Color','red','LineWidth',1)
+
+% figure(10)
+% imshow(CutNDVI)
 
 labeledPicture = zeros(size(NDVI,1),size(NDVI,2),1,'uint8');
 
@@ -109,7 +123,7 @@ while 1
     end
     figure(3)
     [edges(:,1),edges(:,2),~] = impixel(colorPicture);
-    labeledPicture = labelPicture(labeledPicture,edges,label,classLabel,cutoffNDVI,NDVI);
+    labeledPicture = labelPicture(labeledPicture,edges,label,classLabel,NDVIthresh,NDVI);
     clear edges
 end
 if ishandle(3)
@@ -204,23 +218,33 @@ end
 colorImage = cat(3,colorRed,colorGreen,colorBlue);
 end
 
-function outPicture =labelPicture(inPicture,edges,label,classLabel,cutoffNDVI,NDVI)
+function outPicture =labelPicture(inPicture,edges,label,classLabel,NDVIthresh,NDVI)
+
+switch length(NDVIthresh)
+    case 1
+        lowerThresh = NDVIthresh;
+        upperThresh = NDVIthresh;
+    case 2
+        lowerThresh = NDVIthresh(1);
+        upperThresh = NDVIthresh(2);
+end
+
 outPicture = inPicture;
 for ii=1:size(inPicture,1)
     for jj=1:size(inPicture,2)
         if strcmp(label,'Soil') || strcmp(label,'Background') || strcmp(label,'Road')
-            if NDVI(ii,jj) < cutoffNDVI
+            if NDVI(ii,jj) < lowerThresh
                 if isInsidePolygon([jj,ii],edges) == true
                     outPicture(ii,jj)=classLabel(label);
                 end
             end
         else
-            if NDVI(ii,jj) >= cutoffNDVI
+            if NDVI(ii,jj) >= upperThresh
                 if isInsidePolygon([jj,ii],edges) == true
                     outPicture(ii,jj)=classLabel(label);
                 end
             end
-            if NDVI(ii,jj) < cutoffNDVI
+            if NDVI(ii,jj) < lowerThresh
                 if isInsidePolygon([jj,ii],edges) == true
                     outPicture(ii,jj)=classLabel('Soil');
                 end

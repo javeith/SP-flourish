@@ -3,7 +3,9 @@
 % This function evaluates class predictions on 2D orthomosaics related to
 % the Flourish framework.
 %
-% IN:   folder paths of predictions and groundtruth.
+% IN:   Folder paths of predictions and groundtruth.
+%       For every .mat in groundtruth, one with the same name must be
+%       present in the prediction folder. Only these .mar are used.
 %
 % OUT:  Plots of Confusion, Precision-Recall and groundtruth/prediction.
 %
@@ -40,7 +42,7 @@ clear labelContainer
 % Precision-Recall
 truthSet = double(truthSet(truthSet~=0));
 predictSet = double(predictSet(truthSet~=0));
-prec_rec(predictSet,truthSet);
+plotPrecRecall(predictSet,truthSet);
 
 % Confusion
 truthSet = Myind2vec(truthSet');
@@ -68,7 +70,7 @@ for i = 1:numberOfPairs
     subplot(numberOfPairs,2,i+counter)
     tempColor = fillColors(imageContainer(:,:,1,i),colors);
     imshow(tempColor)
-    title(['Truth image: ',nameArray{i}], 'Interpreter', 'none')
+    title(['Ground truth: ',nameArray{i}], 'Interpreter', 'none')
     L = line(ones(length(classLabel)),ones(length(classLabel)), 'LineWidth',2);
     set(L,{'color'},mat2cell(colors./255,ones(1,length(classLabel)),3));
     legend(classNames,'Location','southeast');
@@ -78,7 +80,7 @@ for i = 1:numberOfPairs
     subplot(numberOfPairs,2,i+counter)
     tempColor = fillColors(imageContainer(:,:,2,i),colors);
     imshow(tempColor)
-    title(['Predicted image: ',nameArray{i}], 'Interpreter', 'none')
+    title(['Prediction: ',nameArray{i}], 'Interpreter', 'none')
     L = line(ones(length(classLabel)),ones(length(classLabel)), 'LineWidth',2);
     set(L,{'color'},mat2cell(colors./255,ones(1,length(classLabel)),3));
     legend(classNames,'Location','southeast');
@@ -114,11 +116,29 @@ end
 
 
 function plotConfusion(truth,prediction)
-%'units','normalized','outerposition',[0 0 1 1]
 figure()
 plotconfusion(truth,prediction)
-%set(gca,'fontsize',18);
-title('Confusion Matrix: Pattern Recognition Network')
+
+end
+
+function plotPrecRecall(p, t)
+
+classNames = {'Background','Corn','Sugarbeet','Winterwheat','Road','Soil',...
+    'Buckwheat','Grass','Soybean'};
+
+% for i = 1:size(t,1)
+%     [PREC, TPR, FPR, THRESH] = prec_rec(p(i,:),t(i,:),'holdFigure', 1, 'plotROC', 0, 'plotPR', 1, 'numThresh', 1000, 'plotBaseline', 0);
+%     f1Scores = 2*(PREC.*TPR)./(PREC+TPR);
+%     f1Score(i) = max(f1Scores);
+% end
+% mean(f1Score)
+% sqrt(var(f1Score))
+
+prec_rec(p,t);
+
+grid on
+title('Precision-Recall Curve')    
+legend(classNames,'Location','southeast');
 
 end
 
