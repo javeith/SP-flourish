@@ -27,22 +27,22 @@
 
 basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/';
 
-inPathNIR = [ basePath, 'Ximea_Tamron/20170613/Orthomosaics/' ];
-inPathVIS = [ basePath, 'Ximea_Tamron/20170613/VIS_Orthomosaics/' ];
+inPathNIR = [ basePath, 'FIP/20170531/testSet/Orthomosaics/' ];
+inPathVIS = [ basePath, 'FIP/20170531/testSet/VIS_Orthomosaics/' ];
 
 % Path to save the labeled data as .mat file
-saveLabelPath = [ basePath, 'xFcnClassifier/testLabelTruth/Ximea_Tamron_20170613' ];
+saveLabelPath = [ basePath, 'xFcnClassifier/testLabelTruth/FIP_20170531' ];
 
 % Cutoff NDVI for best separation of plants and soil. If you want to see
 % the NDVI image for point selection, set cutoffON to false. The data
 % labeling still uses the cutoffNDVI when cutoffON is false. Can have 1 or
 % 2 values.
-NDVIthresh = [.41, .48];
+NDVIthresh = [.4, .45]; %.51; %
 cutoffON = true;
 
 % createTraining=True: Create image set where intensity = 0 if label = 0 at
 % location saveDataPath
-createTraining = false;
+createTraining = true;
 saveDataPath = [ basePath, 'xFcnClassifier/trainData/FIP/20170531/' ];
 
 % Padding
@@ -50,7 +50,7 @@ addPadding = true;
 finalSize = [1600,1600]; % [X,Y]
     
 
-%% Labeling
+% Labeling
 %
 % Background, unlabeled 0
 % Corn 1
@@ -71,7 +71,7 @@ classLabel = containers.Map(classNames,classNumbers);
 colors= [0,0,0;0,0,255;255,0,0;0,255,0;255,128,0;110,25,0;125,0,255;255,255,0;0,137,255];
 
 
-%% Load and initialize images
+% Load and initialize images
 
 % Loading images and computing NDVI
 orthomosaicBand1 = im2double(rgb2gray(imread([inPathNIR,'Band1.png'])));
@@ -107,8 +107,8 @@ yl = ylim;
 line([lowerThresh,lowerThresh],ylim,'Color','red','LineWidth',1)
 line([upperThresh,upperThresh],ylim,'Color','red','LineWidth',1)
 
-% figure(10)
-% imshow(CutNDVI)
+figure(10)
+imshow(CutNDVI)
 
 labeledPicture = zeros(size(NDVI,1),size(NDVI,2),1,'uint8');
 

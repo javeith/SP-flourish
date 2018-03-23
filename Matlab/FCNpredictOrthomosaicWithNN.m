@@ -1,17 +1,35 @@
 close all
+clear all
+clc
 
 sourcePath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testData/FIP/20170802/';
-savePath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/MatlabNNPredict/FIP_2017802';
+savePath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/MatlabNNPredict/FIP_20170802';
 
 load(['/Volumes/mac_jannic_2017/thanujan/Datasets/xClassifier/x41bands/PatternNet/net.mat']);
 
-testData =  im2double(imread([sourcePath,'Band1.png']));
+testData =  double(imread([sourcePath,'Band1.png']));
 
 for i=2:41
     inPath = [sourcePath,'Band',num2str(i),'.png'];
-    temp = im2double(imread(inPath));
+    temp = double(imread(inPath));
     testData = cat(3,testData,temp);
 end
+
+% temp1 =  double(imread([sourcePath,'Orthomosaics/','Band1.png']));
+% testData = temp1(:,:,1);
+% 
+% for i=2:41
+%     if i<=25
+%         inPath = [sourcePath,'Orthomosaics/','Band',num2str(i),'.png'];
+%         temp = (double(imread(inPath)));
+%         testData = cat(3,testData,temp(:,:,1));
+%     else
+%         inPath = [sourcePath,'VIS_Orthomosaics/','Band',num2str(i-25),'.png'];
+%         temp = (double(imread(inPath)));
+%         testData = cat(3,testData,temp(:,:,1));
+%     end
+% end
+
 size1 = size(testData,1);
 size2 = size(testData,2);
 
@@ -20,29 +38,33 @@ testData = reshape(testData,[size1*size2,41]);
 result = net(transpose(testData));
 [~,binaryResult] = max(result);
 Prediction = reshape(transpose(binaryResult),[size1,size2]);
+Prediction = relabel(Prediction,sourcePath);
 plotPredictions(Prediction);
 
 save([savePath,'.mat'],'Prediction');
 saveas(1,[savePath,'.png']);
 
 %% Functions
+function outIMG = relabel(resultIMG,sourcePath)
+% Relabel NN output to my (usual) indexing. (see classnames below)
+outIMG = zeros(size(resultIMG));
 
+backgroundIndex =  double(imread([sourcePath,'Band1.png']));
+outIMG(resultIMG==1) = 5;
+outIMG(resultIMG==2) = 4;
+outIMG(resultIMG==3) = 6;
+outIMG(resultIMG==4) = 1;
+outIMG(resultIMG==5) = 7;
+outIMG(resultIMG==6) = 8;
+outIMG(resultIMG==7) = 2;
+outIMG(resultIMG==8) = 3;
+outIMG(backgroundIndex==0)=0;
 
-function plotPredictions(resultIMG)
+end
+
+function plotPredictions(plotImg)
 % Prediction output labeling from 1-8:
 % [soil, road, buckWheat, corn, grass, soyBean, sugarBeet, winterWheat]
-
-% Relabel NN output to my (usual) indexing. (see classnames below)
-plotImg = zeros(size(resultIMG));
-plotImg(resultIMG==1) = 5;
-plotImg(resultIMG==2) = 4;
-plotImg(resultIMG==3) = 6;
-plotImg(resultIMG==4) = 1;
-plotImg(resultIMG==5) = 7;
-plotImg(resultIMG==6) = 8;
-plotImg(resultIMG==7) = 2;
-plotImg(resultIMG==8) = 3;
-
 
 % Names & colors
 classNames = {'Background','Corn','Sugarbeet','Winterwheat','Road','Soil',...
