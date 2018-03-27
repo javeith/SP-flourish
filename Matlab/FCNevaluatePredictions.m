@@ -16,7 +16,7 @@ clc
 %% Sources
 
 truthPath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelTruth/';
-predictPath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/';
+predictPath= '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/MatlabNNPredict/';
 
 %% Load files and plot
 
@@ -145,6 +145,8 @@ end
 function out = Myind2vec(matrix)
 out = zeros(8,size(matrix,2));
 for i = 1:size(matrix,2)
-    out(matrix(i), i) =1;
+    if(matrix(i)~=0)
+        out(matrix(i), i) =1;
+    end
 end
 end
