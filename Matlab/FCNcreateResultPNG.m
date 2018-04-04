@@ -2,7 +2,7 @@ close all
 
 basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/Leonhard/';
 %basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelPredict/';
-%basePath = '/Volumes/mac_jannic_2017/thanujan/Datasets/xFcnClassifier/testLabelTruth/';
+%basePath = '/Users/jveith/Documents/2018 Semester Project/Python/LeonhardData/';
 
 
 resultList = dir([basePath,'*.mat']);
